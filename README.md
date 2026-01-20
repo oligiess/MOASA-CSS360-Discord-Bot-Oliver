@@ -3,7 +3,7 @@
 ## Project Overview
 This repository is a group project for CSS360.
 The team is using this repository to set up collaboration tools and infrastructure for a Discord bot project.
-The specific functionality of the bot is still being discussed.
+The specific functionality of the bot is to simulate a card game of Mafia.
 
 ## Current Project Status
 - Group repository and individual forks created
