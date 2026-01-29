@@ -22,7 +22,7 @@ export default {
   async execute(interaction) {
     const userId = interaction.user.id;
 
-    // ===== 2人目以降の参加処理 =====
+    // Start joining(after first person joined)
     if (joinOpen) {
       if (joinedPlayers.has(userId)) {
         return interaction.reply({ content: "You already joined!", ephemeral: true });
@@ -30,34 +30,33 @@ export default {
       
       joinedPlayers.add(userId);
       
-      // 他の人には見せない「参加完了」メッセージを出すことでエラーを防ぐ
       return interaction.reply({
         content: `✅ You joined the game! Total players: ${joinedPlayers.size}`,
         ephemeral: true 
       });
     }
 
-    // ===== 1人目：募集開始 =====
+    // Start joining(first person)
     joinOpen = true;
     joinedPlayers.clear();
     joinedPlayers.add(userId);
 
-    let remaining = 15; // 15秒に設定
+    let remaining = 15; // Set to 15 seconds
 
     await interaction.reply({
       content: generateJoinText(remaining, interaction.client, joinedPlayers),
       fetchReply: true
     });
 
-    // カウントダウンループ
+    // Countdwon loop
     while (remaining > 0) {
       await sleep(1000);
       remaining--;
 
-      if (!joinOpen) break; // 途中で強制終了された場合用
+      if (!joinOpen) break; 
 
       try {
-        // 常に最新の joinedPlayers を反映して編集
+        // Show the newest joinedPlayers and edit
         await interaction.editReply({
           content: generateJoinText(remaining, interaction.client, joinedPlayers)
         });
@@ -66,7 +65,7 @@ export default {
       }
     }
 
-    // ===== 募集終了処理 =====
+    // Finish
     joinOpen = false;
     const finalSize = joinedPlayers.size;
 
