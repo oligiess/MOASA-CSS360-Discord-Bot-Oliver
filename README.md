@@ -1,3 +1,41 @@
+# MOASA CSS360 Discord Bot
+
+## Project Overview
+This repository is a group project for CSS360.
+The team is using this repository to set up collaboration tools and infrastructure for a Discord bot project.
+The specific functionality of the bot is to simulate a card game of Mafia.
+
+## Current Project Status
+- Group repository and individual forks created
+- GitHub Projects (Kanban board) set up
+- Discord deployment server created
+- Discord test servers created
+- Project is currently in the planning and setup phase
+
+## Team
+- Team Name: MOASA
+- Members:
+  - Mini
+  - Oliver
+  - Alexandra
+  - Sari
+  - Ayad
+ 
+## Sprint 1 (Version 1.0)
+
+Sprint 1 focused on setting up a working Discord bot and implementing initial features.
+
+Completed features include:
+- Welcome message with a meme when a new user joins the server
+- Initial setup for the Mafia game
+- Defined Mafia game rules
+- /join command for players to join a game
+- Direct messages sent to players when enough users have joined
+
+
+## Course Context
+This project is part of CSS360 and is under active development.
+The README will be updated as the project design becomes clearer.
 
 
 # Javascript Discord Welcome MemeBot with GitHub Codespaces
@@ -79,4 +117,5 @@ You can now run the code in the repository using the command line by typing the 
 
 ## Remember: Keep your repository private if you have a .env file in it! Keys and tokens are passwords!
 ## Remember: If you make changes in codespaces, commit and push when done!
+
 
