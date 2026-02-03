@@ -1,64 +1,42 @@
-## Event-Driven Architecture: User Onboarding (Welcome Message) - mini
+## Mafia Game Engine: State Management & Game Logic
+Overview
+The Mafia game is the core functionality of the MOASA bot. It utilizes a Stateful Event-Driven Architecture, where the bot tracks the game's progression (Day/Night phases) and player statuses in real-time.
 
-### Overview
-This section describes the event-driven architecture used by the bot to handle
-user onboarding when a new member joins a Discord server.
-Although this feature is not part of the Mafia game logic itself, it demonstrates
-the same architectural pattern used throughout the bot, including the Mafia game commands.
+Feature Description
+The game manages complex interactions including role assignment, secret voting, and win-condition checks. Unlike simple one-off commands, the Mafia game requires a persistent Game State to transition between different phases based on user input and timed events.
 
----
+Data Flow
+Game Initialization: Users use /start to trigger the game logic.
 
-### Feature Description
-When a new user joins the server, the bot listens for the Discord `guildMemberAdd` event.
-Once the event is triggered, the bot locates a configured text channel and sends a
-welcome message along with an embedded meme image.
+Role Assignment: The bot assigns roles (Mafia, Doctor, Citizen) and updates the Datastore.
 
-This feature improves user onboarding and confirms that the bot is active and responsive
-before users participate in the Mafia game.
+Phase Cycle:
 
----
+Night Phase: Mafia and Doctor submit actions via DMs or private channels.
 
-### Data Flow
-1. A user joins the Discord server
-2. Discord emits the `guildMemberAdd` event
-3. The bot receives the event through the Discord Gateway
-4. The bot searches for a target channel using an environment variable
-5. A welcome message is generated
-6. A meme image is embedded in the message
-7. The message is sent to the selected channel
+Day Phase: Players discuss and vote via slash commands in the public channel.
 
----
+Processing: The Decision Logic checks if the voting threshold is met.
 
-### Architecture Diagram (Data Flow Diagram)
+State Update: Upon execution or murder, the bot updates the player's "Alive" status in the Datastore.
 
-The following data flow diagram illustrates how the bot handles user onboarding
-using an event-driven architecture. When a new user joins the Discord server,
-the Discord Gateway emits a `guildMemberAdd` event. The bot processes this event,
-generates a welcome message with an embedded meme, and sends the message to a
-configured text channel using environment-based configuration.
+Win Condition Check: After each phase, the bot evaluates if the number of Mafia members equals or exceeds the number of Citizens.
 
+Architecture Diagram (System Context & Flow)
+The Mafia logic follows a circular flow where user interactions continuously update the internal Game State Storage, which then determines the next outcome displayed to the Discord channel.
 
-*(Insert Data Flow Diagram image here)*
+https://github.com/CSS360-2026-Winter/MOASA-CSS360-Discord-Bot/blob/verify-v1.0/Untitled.png?raw=true
 
----
+Relevant Code
+src/commands/mafia.js: Main command handler for game flow.
 
-### Relevant Code
-- `src/events/guildMemberAdd.js`
-- Uses Discord.js event handling
-- Uses environment variables for configuration:
-  - `CHANNEL_NAME`
-  - `MEME_URL`
+src/logic/gameState.js: In-memory object/store managing player lists and roles.
 
----
+src/logic/evaluator.js: Logic for determining winners and processing vote results.
 
-### Architectural Significance
-This feature demonstrates the bot’s event-driven design, which is also used by
-other components such as Mafia game commands and role assignment logic.
-By separating event handling, configuration, and message generation, the bot
-maintains modularity and extensibility.
+Architectural Significance
+The Mafia game engine highlights the bot's ability to handle Asynchronous State Transitions.
 
-Future features can reuse this pattern by registering additional events or commands
-without modifying existing logic.
+Modularity: The game logic is decoupled from the Discord API wrapper, allowing for easier debugging of game rules.
 
-
-## mafia game --
+Persistence: By using a dedicated state storage, the bot can maintain game integrity even when multiple events (like simultaneous votes) occur.
