@@ -348,4 +348,8 @@ try {
 }
 resetTransientState();
 
-Testing exposed structural design weaknesses that were not immediately visible during development.
+## Conclusion
+From this tester, we were able to reveal the runtime reliability and architectural robustness issues.  
+The bot is currently incomplete and still lacks sufficient error handling.
+Even a single malformed interaction can cause unstable behavior or halt further execution paths.  
+Stability and fault tolerance can be improved by adding validation guards and isolating command execution. 
