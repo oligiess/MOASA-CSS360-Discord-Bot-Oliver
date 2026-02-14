@@ -229,7 +229,7 @@ The reason these areas weren't properly covered in the test was because they dep
 
 3. Time-Dependent Logic Reduces Testability
 
-The 15-second recruitment countdown in join.js, while helpful for the game lobby, increases complexity, slows down automated testing, and limits the branch coverage for the code. ]
+The 15-second recruitment countdown in join.js, while helpful for the game lobby, increases complexity, slows down automated testing, and limits the branch coverage for the code.
 
 Recommendation:
 
