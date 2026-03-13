@@ -13,6 +13,7 @@ import {
 import { startNight } from "../helpers/gameEngine.js";
 
 import { bulkEnsure, incStat, beginGameSnapshot, cancelGameSnapshot } from "../helpers/stats.js";
+import { dmRoles } from "../helpers/dmRoles.js";
 
 let joinOpen = false;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -104,7 +105,7 @@ export default {
         `Recruitment closed.\n` +
         `Total Players: ${finalSize}\n` +
         `Members: ${formatPlayers(interaction.client, joinedPlayers)}\n\n` +
-        `Roles have been assigned.\nUse /role to view your role privately.`
+        `Roles have been assigned, please check your DMs for your role!\nYou may also use /role to view your role.`
     });
 
     const roles = assignRoles(joinedPlayers);
@@ -114,6 +115,8 @@ export default {
       playerRoles.set(pid, role);
       alivePlayers.add(pid);
     }
+
+    await dmRoles(roles, interaction.client);
 
     // Ensure players exist in stats, increment games and role counts
     bulkEnsure(joinedPlayers);
