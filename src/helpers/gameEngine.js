@@ -9,6 +9,8 @@ import {
   setCurrentGameId
 } from "./gameState.js";
 
+import { getDeathStory, getSaveStory } from "./nightStories.js"
+
 import { incStat, endGameSnapshot } from "./stats.js";
 
 let dayCount = 1; //Day tracking variable
@@ -124,9 +126,8 @@ export const startNight = async (client, channel) => {
     while (timer > 0) {
       const mafiaDone = !isMafiaAlive || nightActions.mafiaTarget !== null;
       const doctorDone = !isDoctorAlive || nightActions.doctorTarget !== null;
-      const fortuneTellerDone = !isFortuneTellerAlive || nightActions.fortuneTellerTarget !== null;
 
-      if (mafiaDone && doctorDone && fortuneTellerDone) break;
+      if (mafiaDone && doctorDone) break;
 
       await sleep(1000);
       timer--;
@@ -145,14 +146,12 @@ export const startNight = async (client, channel) => {
     // If a role was required and did not act, the night restarts.
     const mafiaFailed = isMafiaAlive && nightActions.mafiaTarget === null;
     const doctorFailed = isDoctorAlive && nightActions.doctorTarget === null;
-    const fortuneTellerFailed = isFortuneTellerAlive && nightActions.fortuneTellerTarget === null;
 
-    if (mafiaFailed || doctorFailed || fortuneTellerFailed) {
+    if (mafiaFailed || doctorFailed) {
 
       let slackers = [];
       if (mafiaFailed) slackers.push("The Mafia");
       if (doctorFailed) slackers.push("The Doctor");
-      if (fortuneTellerFailed) slackers.push("The Fortune Teller");
 
       let slackerText = slackers.length > 2 ? "Multiple parties" : slackers.join(" and ");
 
@@ -207,14 +206,14 @@ async function resolveNight(client, channel) {
       const imagePath = "./src/images/doctor-save.png";
       
       await channel.send({
-        content: "🏥 **The Mafia attacked last night, but the Doctor saved the victim!** No one died.",
+        content: getSaveStory(),
         files: [imagePath] 
       });
     } catch (error) {
       console.error("❌ Image upload failed. Check this path:", error.path || "Unknown path");
       console.error("Full Error:", error.message);
 
-      await channel.send("🏥 **The Mafia attacked last night, but the Doctor saved the victim!** No one died.");
+      await channel.send(getSaveStory());
     }
   } 
   else if (mafiaTarget) {
@@ -246,7 +245,7 @@ async function resolveNight(client, channel) {
     }
 
     await sendWithOptionalFiles(channel, {
-      content: `🩸 <@${mafiaTarget}> was found dead. They were the ${role}.`,
+      content: `${getDeathStory(`<@${mafiaTarget}>`)}\nThey were: **${role}**.`,
       files: ["./src/images/CivillanKilled.png"]
     });
   }

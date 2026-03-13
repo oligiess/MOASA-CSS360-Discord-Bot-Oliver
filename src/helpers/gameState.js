@@ -37,7 +37,10 @@ export function resetGame() {
   gameRunning = false;
   currentPhase = "PRE_GAME";
 
-  nightActions = { mafiaTarget: null, doctorTarget: null , fortuneTellerTarget: null};
+  nightActions.mafiaTarget = null;
+  nightActions.doctorTarget = null;
+  nightActions.fortuneTellerTarget = null;
+  
   votes.clear();
 
   currentGameId = null;
