@@ -3,7 +3,7 @@
 ## Project Overview
 MOASA is a fully interactive, automated Mafia game bot. It manages complex state transitions, role-specific logic, persistent data tracking, and immersive storytelling to bring the classic social deduction game to Discord.
 
-## Current Project Status: COMPLETED (Spring 2026)
+## Current Project Status: COMPLETED (Winter 2026)
 - Core Engine: Fully functional Night/Day cycle with automated phase resolution.
 - Role Logic: Dynamic assignment for Mafia, Doctor, Fortune Teller, and Civilian roles.
 - Persistence: Full stat tracking with per-game snapshots and lifetime leaderboards.
