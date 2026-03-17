@@ -9,6 +9,13 @@ import {
   setCurrentGameId
 } from "./gameState.js";
 
+import { 
+  ActionRowBuilder, 
+  ButtonBuilder, 
+  ButtonStyle, 
+  ComponentType 
+} from "discord.js";
+
 import { getDeathStory, getSaveStory } from "./nightStories.js"
 
 import { incStat, endGameSnapshot } from "./stats.js";
@@ -313,52 +320,91 @@ async function startDay(client, channel) {
   setPhase("DAY");
   votes.clear();
 
-  let timer = 60; // Initial voting duration
-  const voteImagePath = "./src/images/vote-processing.png"; // ✅ Path to your image
-
-  // --- [ADD THIS: Generate Alive List for Voting] ---
-  const aliveIds = Array.from(alivePlayers.keys());
-  const aliveList = aliveIds.map(id => `• <@${id}>`).join("\n");
-
-  // Send the initial Day Phase message.
-  // This uses the safe sender so missing images do not crash the match.
-  const votingMsg = await sendWithOptionalFiles(channel, {
-    content:
-      `☀️ Day Phase begins.\n` +
-      `Players discuss and use /vote to identify the Mafia.\n` +
-      `Voting closes in ${timer} seconds.`,
-    files: [voteImagePath]
+  const aliveIds = Array.from(alivePlayers);
+  let timer = 60;
+  
+  // Create the buttons
+  const rows = chunkArray(aliveIds, 5).map((group) => {
+    const row = new ActionRowBuilder();
+    group.forEach((id) => {
+      const user = client.users.cache.get(id);
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`vote_${id}`)
+          .setLabel(user ? user.username : "Unknown")
+          .setStyle(ButtonStyle.Primary)
+      );
+    });
+    return row;
   });
 
-  await channel.send(
-    `👥 **Players available for voting (${aliveIds.length}):**\n` + 
-    (aliveList || "_No one is left alive._")
-  );
+  const votingMsg = await channel.send({
+    content: "☀️ **Day Phase Begins**\nClick a button below to cast your vote for the Mafia!",
+    components: rows,
+    files: ["./src/images/vote-processing.png"]
+  });
 
-  // 2. Countdown loop
-  while (timer > 0) {
-    // End early if everyone alive has voted.
-    if (votes.size === alivePlayers.size && alivePlayers.size > 0) break;
+  // Collector logic
+  const collector = votingMsg.createMessageComponentCollector({
+    componentType: ComponentType.Button,
+  });
+
+  collector.on('collect', async (i) => {
+    const voterId = i.user.id;
+    const targetId = i.customId.replace('vote_', '');
+
+    // Validation
+    if (!alivePlayers.has(voterId)) {
+      return i.reply({ content: "💀 Dead players cannot vote!", ephemeral: true });
+    }
+    if (voterId === targetId) {
+      return i.reply({ content: "⚠️ You cannot vote for yourself!", ephemeral: true });
+    }
+
+    const isChangingVote = votes.has(voterId);
+    votes.set(voterId, targetId);
+
+    await i.reply({ content: `✅ Vote recorded for <@${targetId}>!`, ephemeral: true });
+
+    if (!isChangingVote) {
+      await channel.send(`🗳️ **${i.user.username}** has cast a vote. (${votes.size}/${alivePlayers.size} votes cast)`);
+    }
+  });
+
+    while (timer > 0) {
+    // Check if everyone has voted
+    if (votes.size === alivePlayers.size) {
+      console.log("[DEBUG] Everyone voted, ending early.");
+      break; 
+    }
 
     await sleep(1000);
     timer--;
 
-    try {
-      await votingMsg.edit({
-        content:
-          `☀️ Day Phase begins.\n` +
-          `Players discuss and use /vote to identify the Mafia.\n` +
-          `Voting closes in ${timer} seconds.`
-      });
-    } catch (error) {
-      // If edits fail, stop editing but continue the match.
-      console.error("Voting timer update error:", error);
-      break;
+    // Update the message every 5 seconds to avoid Discord Rate Limits
+    if (timer % 5 === 0 || timer <= 5) {
+      try {
+        await votingMsg.edit({
+          content: `☀️ **Day Phase Begins**\nClick a button below to cast your vote!\n⏳ Time remaining: **${timer}s**`
+        });
+      } catch (err) {
+        console.error("Timer edit failed:", err.message);
+      }
     }
   }
 
-  await votingMsg.edit({
-    content: "⌛ Voting has closed. Processing votes."
+  // 4. Cleanup
+  collector.stop();
+  
+  const disabledRows = rows.map(row => 
+    ActionRowBuilder.from(row).setComponents(
+      row.components.map(btn => ButtonBuilder.from(btn).setDisabled(true))
+    )
+  );
+  
+  await votingMsg.edit({ 
+    content: "⌛ Voting has closed. Processing results...",
+    components: disabledRows 
   });
 
   await sleep(2000);
@@ -462,4 +508,14 @@ async function checkWinAndContinue(client, channel) {
   await channel.send("🌅 The sun sets. Prepare for the next night.");
   await sleep(3000);
   await startNight(client, channel);
+}
+
+
+// Helper for button-based voting system
+function chunkArray(array, size) {
+  const chunked = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunked.push(array.slice(i, i + size));
+  }
+  return chunked;
 }
